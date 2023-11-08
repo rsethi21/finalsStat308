@@ -3,8 +3,9 @@ Rohan: Health
 John: Lifestyle
 
 
-Health - Diabetes_012, HighBP, HighChol, BMI, Stroke, HeartDiseaseorAttack, GenHlth, PhysHlth
+Health - Diabetes_012 + HighBP + HighChol + BMI + Stroke + HeartDiseaseorAttack + GenHlth + PhysHlth
 
-Lifestyle - Smoker, PhysActivity, Fruits, Veggies, HvyAlcoholConsump, DiffWalk
+Lifestyle - Smoker + PhysActivity + Fruits + Veggies + HvyAlcoholConsump + DiffWalk
 
-Social Status - NoDocbcCost, Sex, Age, Education, Income
+Social Status - NoDocbcCost + Sex + Age + Education + Income
+
