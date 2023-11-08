@@ -1,5 +1,5 @@
-Health - Diabetes_012, HighBP, HighChol, BMI, Stroke, HeartDiseaseorAttack, GenHlth, PhysHlth, DiffWalk
+Health - Diabetes_012, HighBP, HighChol, BMI, Stroke, HeartDiseaseorAttack, GenHlth, PhysHlth
 
-Lifestyle - Smoker, PhysActivity, Fruits, Veggies, HvyAlcoholConsump
+Lifestyle - Smoker, PhysActivity, Fruits, Veggies, HvyAlcoholConsump, DiffWalk
 
 Social Status - NoDocbcCost, Sex, Age, Education, Income
