@@ -1,3 +1,8 @@
+Sean: Social Status
+Rohan: Health
+John: Lifestyle
+
+
 Health - Diabetes_012, HighBP, HighChol, BMI, Stroke, HeartDiseaseorAttack, GenHlth, PhysHlth
 
 Lifestyle - Smoker, PhysActivity, Fruits, Veggies, HvyAlcoholConsump, DiffWalk
