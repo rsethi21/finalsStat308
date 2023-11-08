@@ -1,0 +1,5 @@
+Health - Diabetes_012, HighBP, HighChol, BMI, Stroke, HeartDiseaseorAttack, GenHlth, PhysHlth, DiffWalk
+
+Lifestyle - Smoker, PhysActivity, Fruits, Veggies, HvyAlcoholConsump
+
+Social Status - NoDocbcCost, Sex, Age, Education, Income
