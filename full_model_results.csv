@@ -1,0 +1,17 @@
+"","Transformation","Terms","r2"
+"1","Sqrt","Basic + Squared + Inter",0.161766523347388
+"2","No transformation","Basic + Squared + Inter",0.159705827382591
+"3","Log","Basic + Squared + Inter",0.152353557048459
+"4","Sqrt","Basic + Inter",0.144134842715943
+"5","No transformation","Basic + Inter",0.140771873928343
+"6","Sqrt Log","Basic + Squared + Inter",0.13757305909588
+"7","Log","Basic + Inter",0.136426337228986
+"8","Sqrt Log","Basic + Inter",0.122351046279249
+"9","Sqrt","Basic + Squared",0.108793839194357
+"10","Sqrt","Basic",0.108605121882947
+"11","Log","Basic + Squared",0.103913344533677
+"12","Log","Basic",0.103649653298405
+"13","No transformation","Basic + Squared",0.10141860167174
+"14","No transformation","Basic",0.101257808491649
+"15","Sqrt Log","Basic + Squared",0.0908132572160368
+"16","Sqrt Log","Basic",0.0905291783574477
