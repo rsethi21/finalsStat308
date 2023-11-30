@@ -1,0 +1,106 @@
+---
+title: "project"
+author: "Rohan Sethi"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Open Data
+```{r}
+setwd("C:/Users/HOME PC/Desktop/school/fall 2023/stat308/finalsStat308/")
+data <- read.csv("Breast_cancer.csv")
+```
+
+# Load Libraries
+```{r}
+library("tidyverse")
+library("ggplot2")
+```
+
+# Data Engineering
+```{r}
+new_col = data$Reginol.Node.Positive/data$Regional.Node.Examined
+data$rate = new_col
+columns_to_remove = c("T.Stage", "X6th.Stage","differentiate", "Reginol.Node.Positive", "Regional.Node.Examined")
+filtered_data = select(data, -columns_to_remove)
+head(filtered_data)
+```
+# Analyze Interactions
+```{r}
+ys = c("rate","Survival.Months","Age")
+colors = c("Progesterone.Status", "Estrogen.Status", "A.Stage", "Race", "Marital.Status", "Grade", "N.Stage","Status", "Age", "Survival.Months")
+
+for (y in ys){
+  for (c in colors){
+    ggplot(aes(x=Tumor.Size, y=!!sym(y), color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
+    ggsave(paste(paste(y, c), ".png"))
+  }
+}
+```
+```{r}
+y1 = "rate"
+y2 = "Survival.Months"
+y3 = "Age"
+colors1 = c("Age", "Survival.Months")
+colors2 = c("Age", "rate")
+colors3 = c("rate", "Survival.Months")
+
+for (c in colors1){
+    ggplot(aes(x=Tumor.Size, y=!!sym(y1), color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
+    ggsave(paste(paste(y1, c), ".png"))
+}
+
+for (c in colors2){
+    ggplot(aes(x=Tumor.Size, y=!!sym(y2), color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
+    ggsave(paste(paste(y2, c), ".png"))
+}
+
+for (c in colors3){
+    ggplot(aes(x=Tumor.Size, y=!!sym(y3), color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
+    ggsave(paste(paste(y3, c), ".png"))
+}
+```
+
+
+# Basic Model
+```{r}
+basic_model <- lm(Tumor.Size ~ ., filtered_data)
+summary(basic_model)
+plot(basic_model, 1)
+plot(basic_model, 2)
+```
+# Log Model
+```{r}
+model_log <- lm(log(Tumor.Size)~., filtered_data)
+summary(model_log)
+plot(model_log, 1)
+plot(model_log, 2)
+```
+
+# Model Sqrt
+```{r}
+model_sqrt <- lm(sqrt(Tumor.Size)~., filtered_data)
+summary(model_sqrt)
+plot(model_sqrt, 1)
+plot(model_sqrt, 2)
+```
+
+# Selected Interactions Model
+```{r}
+model_picked <- lm(Tumor.Size ~ . + rate:N.Stage + rate:Estrogen.Status + Survival.Months:Status, filtered_data) # .*. for all interactions possible
+summary(model_picked)
+```
+
+
+# Model Selection
+```{r}
+library(leaps)
+model <- regsubsets(Tumor.Size ~ .*., filtered_data, method="backward")
+summary(model)
+```
+
+```{r}
+coef(model, which.max(summary(model)$adjr2))
+summary(model)$adjr2[which.max(summary(model)$adjr2)]
+```
+
