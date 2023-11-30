@@ -27,37 +27,16 @@ head(filtered_data)
 ```
 # Analyze Interactions
 ```{r}
-ys = c("rate","Survival.Months","Age")
-colors = c("Progesterone.Status", "Estrogen.Status", "A.Stage", "Race", "Marital.Status", "Grade", "N.Stage","Status", "Age", "Survival.Months")
+ys = c("rate","Survival.Months","Age","Progesterone.Status", "Estrogen.Status", "A.Stage", "Race", "Marital.Status", "Grade", "N.Stage","Status")
+colors = c("rate","Survival.Months","Age", "Progesterone.Status", "Estrogen.Status", "A.Stage", "Race", "Marital.Status", "Grade", "N.Stage","Status")
 
 for (y in ys){
   for (c in colors){
+    if (y != c){
     ggplot(aes(x=!!sym(y), y=Tumor.Size, color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
     ggsave(paste(paste(y, c), ".png"))
+    }
   }
-}
-```
-```{r}
-y1 = "rate"
-y2 = "Survival.Months"
-y3 = "Age"
-colors1 = c("Age", "Survival.Months")
-colors2 = c("Age", "rate")
-colors3 = c("rate", "Survival.Months")
-
-for (c in colors1){
-    ggplot(aes(x=!!sym(y1), y=Tumor.Size, color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
-    ggsave(paste(paste(y1, c), ".png"))
-}
-
-for (c in colors2){
-    ggplot(aes(x=!!sym(y2), y=Tumor.Size, color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
-    ggsave(paste(paste(y2, c), ".png"))
-}
-
-for (c in colors3){
-    ggplot(aes(x=!!sym(y3), y=Tumor.Size, color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
-    ggsave(paste(paste(y3, c), ".png"))
 }
 ```
 
