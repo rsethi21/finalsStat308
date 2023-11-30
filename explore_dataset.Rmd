@@ -7,7 +7,7 @@ output: html_document
 
 # Open Data
 ```{r}
-setwd("C:/Users/HOME PC/Desktop/school/fall 2023/stat308/finalsStat308/")
+setwd("path/to/data/folder")
 data <- read.csv("Breast_cancer.csv")
 ```
 
@@ -68,6 +68,23 @@ summary(model_sqrt)
 plot(model_sqrt, 1)
 plot(model_sqrt, 2)
 ```
+## Sqrt-Log Basic
+```{r}
+slb <- "sqrt(log(Tumor.Size)) ~ ."
+slb_model <- lm(as.formula(slb), filtered_data)
+summary(slb_model)
+plot(slb_model, 1)
+plot(slb_model, 2)
+```
+## Log-Sqrt Basic
+```{r}
+lsb <- "log(sqrt(Tumor.Size)) ~ ."
+lsb_model <- lm(as.formula(lsb), filtered_data)
+summary(lsb_model)
+plot(lsb_model, 1)
+plot(lsb_model, 2)
+```
+
 
 # Selected Interactions Model
 ## No Transformation
@@ -94,28 +111,47 @@ summary(sqrt_model_picked)
 plot(sqrt_model_picked, 1)
 plot(sqrt_model_picked, 2)
 ```
+## Sqrt-Log Picked
+```{r}
+slp <- "sqrt(log(Tumor.Size)) ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months"
+slp_model <- lm(as.formula(slp), filtered_data)
+summary(slp_model)
+plot(slp_model, 1)
+plot(slp_model, 2)
+```
+## Log Sqrt Picked
+```{r}
+lsp <- "log(sqrt(Tumor.Size)) ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months"
+lsp_model <- lm(as.formula(lsp), filtered_data)
+summary(lsp_model)
+plot(lsp_model, 1)
+plot(lsp_model, 2)
+```
+
 
 
 # Model Selection
 ```{r}
-models <- c(ml, ms, bm, mp, lmp, smp)
-nmaxes <- c(length(filtered_data)-1, length(filtered_data)-1, length(filtered_data)-1, length(filtered_data)-1+20, length(filtered_data)-1+20, length(filtered_data)-1+20)
+models <- c(ml, ms, bm, slb, lsb, mp, lmp, smp, slp, lsp)
+nmaxes <- c(length(filtered_data)-1, length(filtered_data)-1, length(filtered_data)-1, length(filtered_data)-1, length(filtered_data)-1, length(filtered_data)-1+20, length(filtered_data)-1+20, length(filtered_data)-1+20, length(filtered_data)-1+20, length(filtered_data)-1+20)
 best_model <- none
 best_score <- 0
+best_index <- 0
 
 for (i in seq_along(models)) {
   print(i)
-  selected_models <- regsubsets(as.formula(models[i]), data=filtered_data, nvmax=nmaxes[i], method="backward")
+  selected_models <- regsubsets(as.formula(models[i]), data=filtered_data, nvmax=nmaxes[i], method="seqrep")
   score <- summary(selected_models)$adjr2[which.max(summary(selected_models)$adjr2)]
   if (score > best_score) {
     best_model <- coef(selected_models, which.max(summary(selected_models)$adjr2))
     best_score <- summary(selected_models)$adjr2[which.max(summary(selected_models)$adjr2)]
+    best_index = i
   }
 }
 ```
 
 ```{r}
-print(best_model)
+print(length(best_model))
 print(best_score)
+print(models[best_index])
 ```
-
