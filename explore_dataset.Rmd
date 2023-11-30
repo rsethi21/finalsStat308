@@ -32,7 +32,7 @@ colors = c("Progesterone.Status", "Estrogen.Status", "A.Stage", "Race", "Marital
 
 for (y in ys){
   for (c in colors){
-    ggplot(aes(x=Tumor.Size, y=!!sym(y), color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
+    ggplot(aes(x=!!sym(y), y=Tumor.Size, color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
     ggsave(paste(paste(y, c), ".png"))
   }
 }
@@ -46,17 +46,17 @@ colors2 = c("Age", "rate")
 colors3 = c("rate", "Survival.Months")
 
 for (c in colors1){
-    ggplot(aes(x=Tumor.Size, y=!!sym(y1), color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
+    ggplot(aes(x=!!sym(y1), y=Tumor.Size, color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
     ggsave(paste(paste(y1, c), ".png"))
 }
 
 for (c in colors2){
-    ggplot(aes(x=Tumor.Size, y=!!sym(y2), color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
+    ggplot(aes(x=!!sym(y2), y=Tumor.Size, color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
     ggsave(paste(paste(y2, c), ".png"))
 }
 
 for (c in colors3){
-    ggplot(aes(x=Tumor.Size, y=!!sym(y3), color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
+    ggplot(aes(x=!!sym(y3), y=Tumor.Size, color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
     ggsave(paste(paste(y3, c), ".png"))
 }
 ```
