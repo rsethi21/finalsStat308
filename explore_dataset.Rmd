@@ -28,7 +28,7 @@ head(filtered_data)
 # Analyze Interactions
 ```{r}
 ys = c("rate","Survival.Months","Age","Progesterone.Status", "Estrogen.Status", "A.Stage", "Race", "Marital.Status", "Grade", "N.Stage","Status")
-colors = c("rate","Survival.Months","Age", "Progesterone.Status", "Estrogen.Status", "A.Stage", "Race", "Marital.Status", "Grade", "N.Stage","Status")
+colors = c("Progesterone.Status", "Estrogen.Status", "A.Stage", "Race", "Marital.Status", "Grade", "N.Stage","Status")
 
 for (y in ys){
   for (c in colors){
