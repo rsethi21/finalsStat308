@@ -15,6 +15,7 @@ data <- read.csv("Breast_cancer.csv")
 ```{r}
 library("tidyverse")
 library("ggplot2")
+library(leaps)
 ```
 
 # Data Engineering
@@ -34,7 +35,7 @@ for (y in ys){
   for (c in colors){
     if (y != c){
     ggplot(aes(x=!!sym(y), y=Tumor.Size, color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
-    ggsave(paste(paste(y, c), ".png"))
+    # ggsave(paste(paste(y, c), ".png"))
     }
   }
 }
@@ -42,13 +43,14 @@ for (y in ys){
 
 
 # Basic Model
+## No Transformation
 ```{r}
 basic_model <- lm(Tumor.Size ~ ., filtered_data)
 summary(basic_model)
 plot(basic_model, 1)
 plot(basic_model, 2)
 ```
-# Log Model
+## Log Model
 ```{r}
 model_log <- lm(log(Tumor.Size)~., filtered_data)
 summary(model_log)
@@ -56,7 +58,7 @@ plot(model_log, 1)
 plot(model_log, 2)
 ```
 
-# Model Sqrt
+## Model Sqrt
 ```{r}
 model_sqrt <- lm(sqrt(Tumor.Size)~., filtered_data)
 summary(model_sqrt)
@@ -65,21 +67,46 @@ plot(model_sqrt, 2)
 ```
 
 # Selected Interactions Model
+## No Transformation
 ```{r}
-model_picked <- lm(Tumor.Size ~ . + rate:N.Stage + rate:Estrogen.Status + Survival.Months:Status, filtered_data) # .*. for all interactions possible
+model_picked <- lm(Tumor.Size ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months, filtered_data) # .*. for all interactions possible
 summary(model_picked)
+plot(model_picked, 1)
+plot(model_picked, 2)
+```
+## Log Picked Interactions
+```{r}
+log_model_picked <- lm(log(Tumor.Size) ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months, filtered_data) # .*. for all interactions possible
+summary(log_model_picked)
+plot(log_model_picked, 1)
+plot(log_model_picked, 2)
+```
+## Sqrt Picked Model
+```{r}
+sqrt_model_picked <- lm(log(Tumor.Size) ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months, filtered_data) # .*. for all interactions possible
+summary(sqrt_model_picked)
+plot(sqrt_model_picked, 1)
+plot(sqrt_model_picked, 2)
 ```
 
 
 # Model Selection
 ```{r}
-library(leaps)
-model <- regsubsets(Tumor.Size ~ .*., filtered_data, method="backward")
-summary(model)
+models <- c(model_log, model_sqrt, basic_model, model_picked, log_model_picked, sqrt_model_picked)
+best_model <- none
+best_score <- 0
+
+for (model in models) {
+  selected_models <- step(model)
+  score <- summary(selected_models)$adjr2[which.max(summary(selected_models)$adjr2)]
+  if (score > best_score) {
+    best_model <- coef(selected_models, which.max(summary(selected_models)$adjr2))
+    best_score <- summary(selected_models)$adjr2[which.max(summary(selected_models)$adjr2)]
+  }
+}
 ```
 
 ```{r}
-coef(model, which.max(summary(model)$adjr2))
-summary(model)$adjr2[which.max(summary(model)$adjr2)]
+print(best_model)
 ```
 
