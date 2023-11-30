@@ -45,14 +45,16 @@ for (y in ys){
 # Basic Model
 ## No Transformation
 ```{r}
-basic_model <- lm(Tumor.Size ~ ., filtered_data)
+bm <- "Tumor.Size ~ ."
+basic_model <- lm(as.formula(bm), filtered_data)
 summary(basic_model)
 plot(basic_model, 1)
 plot(basic_model, 2)
 ```
 ## Log Model
 ```{r}
-model_log <- lm(log(Tumor.Size)~., filtered_data)
+ml <- "log(Tumor.Size)~."
+model_log <- lm(as.formula(ml), filtered_data)
 summary(model_log)
 plot(model_log, 1)
 plot(model_log, 2)
@@ -60,7 +62,8 @@ plot(model_log, 2)
 
 ## Model Sqrt
 ```{r}
-model_sqrt <- lm(sqrt(Tumor.Size)~., filtered_data)
+ms <- "sqrt(Tumor.Size)~."
+model_sqrt <- lm(as.formula(ms), filtered_data)
 summary(model_sqrt)
 plot(model_sqrt, 1)
 plot(model_sqrt, 2)
@@ -69,21 +72,24 @@ plot(model_sqrt, 2)
 # Selected Interactions Model
 ## No Transformation
 ```{r}
-model_picked <- lm(Tumor.Size ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months, filtered_data) # .*. for all interactions possible
+mp <- "Tumor.Size ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months"
+model_picked <- lm(as.formula(mp), filtered_data) # .*. for all interactions possible
 summary(model_picked)
 plot(model_picked, 1)
 plot(model_picked, 2)
 ```
 ## Log Picked Interactions
 ```{r}
-log_model_picked <- lm(log(Tumor.Size) ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months, filtered_data) # .*. for all interactions possible
+lmp <- "log(Tumor.Size) ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months"
+log_model_picked <- lm(as.formula(lmp), filtered_data) # .*. for all interactions possible
 summary(log_model_picked)
 plot(log_model_picked, 1)
 plot(log_model_picked, 2)
 ```
 ## Sqrt Picked Model
 ```{r}
-sqrt_model_picked <- lm(log(Tumor.Size) ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months, filtered_data) # .*. for all interactions possible
+smp <- "sqrt(Tumor.Size) ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months"
+sqrt_model_picked <- lm(as.formula(smp), filtered_data) # .*. for all interactions possible
 summary(sqrt_model_picked)
 plot(sqrt_model_picked, 1)
 plot(sqrt_model_picked, 2)
@@ -92,12 +98,14 @@ plot(sqrt_model_picked, 2)
 
 # Model Selection
 ```{r}
-models <- c(model_log, model_sqrt, basic_model, model_picked, log_model_picked, sqrt_model_picked)
+models <- c(ml, ms, bm, mp, lmp, smp)
+nmaxes <- c(length(filtered_data)-1, length(filtered_data)-1, length(filtered_data)-1, length(filtered_data)-1+20, length(filtered_data)-1+20, length(filtered_data)-1+20)
 best_model <- none
 best_score <- 0
 
-for (model in models) {
-  selected_models <- step(model)
+for (i in seq_along(models)) {
+  print(i)
+  selected_models <- regsubsets(as.formula(models[i]), data=filtered_data, nvmax=nmaxes[i], method="backward")
   score <- summary(selected_models)$adjr2[which.max(summary(selected_models)$adjr2)]
   if (score > best_score) {
     best_model <- coef(selected_models, which.max(summary(selected_models)$adjr2))
@@ -108,5 +116,6 @@ for (model in models) {
 
 ```{r}
 print(best_model)
+print(best_score)
 ```
 
