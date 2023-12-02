@@ -2,12 +2,14 @@
 title: "project"
 author: "Rohan Sethi"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 # Open Data
 ```{r}
-setwd("path/to/data/folder")
+# setwd("path")
 data <- read.csv("Breast_cancer.csv")
 ```
 
@@ -16,26 +18,32 @@ data <- read.csv("Breast_cancer.csv")
 library("tidyverse")
 library("ggplot2")
 library(leaps)
+library("car")
 ```
 
 # Data Engineering
 ```{r}
 new_col = data$Reginol.Node.Positive/data$Regional.Node.Examined
 data$rate = new_col
-columns_to_remove = c("T.Stage", "X6th.Stage","differentiate", "Regional.Node.Postive")
+columns_to_remove = c("T.Stage", "X6th.Stage","differentiate", "Reginol.Node.Positive")
 filtered_data = select(data, -columns_to_remove)
 head(filtered_data)
 ```
+```{r}
+write.csv(filtered_data, file="./engineered_data.csv")
+```
+
+
 # Analyze Interactions
 ```{r}
-ys = c("rate","Survival.Months","Age","Progesterone.Status", "Estrogen.Status", "A.Stage", "Race", "Marital.Status", "Grade", "N.Stage","Status")
-colors = c("Progesterone.Status", "Estrogen.Status", "A.Stage", "Race", "Marital.Status", "Grade", "N.Stage","Status")
+ys = c("rate","Survival.Months","Age","Progesterone.Status", "Estrogen.Status", "A.Stage", "Race", "Marital.Status", "Grade", "N.Stage","Status", "Regional.Node.Examined")
+colors = c("Progesterone.Status", "Estrogen.Status", "A.Stage", "Race", "Marital.Status", "Grade", "N.Stage","Status", "Regional.Node.Examined")
 
 for (y in ys){
   for (c in colors){
     if (y != c){
     ggplot(aes(x=!!sym(y), y=Tumor.Size, color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
-    ggsave(paste(paste(y, c), ".png"))
+    # ggsave(paste(paste(y, c), ".png"))
     }
   }
 }
@@ -89,7 +97,7 @@ plot(lsb_model, 2)
 # Selected Interactions Model
 ## No Transformation
 ```{r}
-mp <- "Tumor.Size ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months"
+mp <- "Tumor.Size ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months + Regional.Node.Examined:A.Stage"
 model_picked <- lm(as.formula(mp), filtered_data) # .*. for all interactions possible
 summary(model_picked)
 plot(model_picked, 1)
@@ -97,7 +105,7 @@ plot(model_picked, 2)
 ```
 ## Log Picked Interactions
 ```{r}
-lmp <- "log(Tumor.Size) ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months"
+lmp <- "log(Tumor.Size) ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months + Regional.Node.Examined:A.Stage"
 log_model_picked <- lm(as.formula(lmp), filtered_data) # .*. for all interactions possible
 summary(log_model_picked)
 plot(log_model_picked, 1)
@@ -105,7 +113,7 @@ plot(log_model_picked, 2)
 ```
 ## Sqrt Picked Model
 ```{r}
-smp <- "sqrt(Tumor.Size) ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months"
+smp <- "sqrt(Tumor.Size) ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months + Regional.Node.Examined:A.Stage"
 sqrt_model_picked <- lm(as.formula(smp), filtered_data) # .*. for all interactions possible
 summary(sqrt_model_picked)
 plot(sqrt_model_picked, 1)
@@ -113,7 +121,7 @@ plot(sqrt_model_picked, 2)
 ```
 ## Sqrt-Log Picked
 ```{r}
-slp <- "sqrt(log(Tumor.Size)) ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months"
+slp <- "sqrt(log(Tumor.Size)) ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months + Regional.Node.Examined:A.Stage"
 slp_model <- lm(as.formula(slp), filtered_data)
 summary(slp_model)
 plot(slp_model, 1)
@@ -121,7 +129,7 @@ plot(slp_model, 2)
 ```
 ## Log Sqrt Picked
 ```{r}
-lsp <- "log(sqrt(Tumor.Size)) ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months"
+lsp <- "log(sqrt(Tumor.Size)) ~ . + A.Stage:N.Stage + A.Stage:Status + A.Stage:Age + Grade:Age + Age:N.Stage + Age:Status + Estrogen.Status:Grade + Progesterone.Status:Estrogen.Status + A.Stage:Grade + A.Stage:N.Stage + A.Stage:rate + Grade:rate + N.Stage:rate + Status:rate + A.Stage:Survival.Months + Estrogen.Status + Survival.Months + Grade:Survival.Months + N.Stage:Survival.Months + Status:Survival.Months + Regional.Node.Examined:A.Stage"
 lsp_model <- lm(as.formula(lsp), filtered_data)
 summary(lsp_model)
 plot(lsp_model, 1)
@@ -132,26 +140,93 @@ plot(lsp_model, 2)
 
 # Model Selection
 ```{r}
-models <- c(ml, ms, bm, slb, lsb, mp, lmp, smp, slp, lsp)
-nmaxes <- c(length(filtered_data)-1, length(filtered_data)-1, length(filtered_data)-1, length(filtered_data)-1, length(filtered_data)-1, length(filtered_data)-1+20, length(filtered_data)-1+20, length(filtered_data)-1+20, length(filtered_data)-1+20, length(filtered_data)-1+20)
-best_model <- none
-best_score <- 0
-best_index <- 0
+basic_models <- c(ml, ms, bm, slb, lsb)
+inter_models <- c(mp, lmp, smp, slp, lsp)
+nmaxes_basic <- c(length(filtered_data)-1, length(filtered_data)-1, length(filtered_data)-1, length(filtered_data)-1, length(filtered_data)-1)
+nmaxes_interaction <- c(length(filtered_data)-1+20, length(filtered_data)-1+20, length(filtered_data)-1+20, length(filtered_data)-1+20, length(filtered_data)-1+20)
+best_model_basic <- none
+best_score_basic <- 0
+best_index_basic <- 0
+best_model_inter <- none
+best_score_inter <- 0
+best_index_inter <- 0
+```
 
-for (i in seq_along(models)) {
+```{r}
+
+for (i in seq_along(basic_models)) {
   print(i)
-  selected_models <- regsubsets(as.formula(models[i]), data=filtered_data, nvmax=nmaxes[i], method="seqrep")
+  selected_models <- regsubsets(as.formula(basic_models[i]), data=filtered_data, nvmax=nmaxes_basic[i], method="seqrep")
   score <- summary(selected_models)$adjr2[which.max(summary(selected_models)$adjr2)]
-  if (score > best_score) {
-    best_model <- coef(selected_models, which.max(summary(selected_models)$adjr2))
-    best_score <- summary(selected_models)$adjr2[which.max(summary(selected_models)$adjr2)]
-    best_index = i
+  if (score > best_score_basic) {
+    best_model_basic <- coef(selected_models, which.max(summary(selected_models)$adjr2))
+    best_score_basic <- summary(selected_models)$adjr2[which.max(summary(selected_models)$adjr2)]
+    best_index_basic = i
   }
 }
 ```
 
 ```{r}
-print(length(best_model))
-print(best_score)
-print(models[best_index])
+print(length(best_model_basic))
+print(best_score_basic)
+print(basic_models[best_index_basic])
 ```
+
+```{r}
+best_model_basic
+```
+```{r}
+best_basic <- lm(sqrt(Tumor.Size) ~ N.Stage + Grade + Progesterone.Status + Survival.Months + rate + Age + A.Stage + Regional.Node.Examined + Status, filtered_data)
+summary(best_basic)
+plot(best_basic, 1)
+plot(best_basic, 2)
+```
+
+
+
+```{r}
+
+for (i in seq_along(inter_models)) {
+  print(i)
+  selected_models <- regsubsets(as.formula(inter_models[i]), data=filtered_data, nvmax=nmaxes_interaction[i], method="seqrep")
+  score <- summary(selected_models)$adjr2[which.max(summary(selected_models)$adjr2)]
+  if (score > best_score_inter) {
+    best_model_inter <- coef(selected_models, which.max(summary(selected_models)$adjr2))
+    best_score_inter <- summary(selected_models)$adjr2[which.max(summary(selected_models)$adjr2)]
+    best_index_inter = i
+  }
+}
+```
+
+
+
+```{r}
+print(length(best_model_inter))
+print(best_score_inter)
+print(inter_models[best_index_inter])
+```
+
+```{r}
+best_model_inter
+```
+
+```{r}
+best_interaction <- lm(sqrt(Tumor.Size) ~ Age + Race + Marital.Status + N.Stage + Grade + A.Stage + Estrogen.Status + Regional.Node.Examined + Survival.Months + Status + N.Stage:A.Stage + Age:Grade + Age:N.Stage + Grade:Estrogen.Status + Estrogen.Status:Progesterone.Status + Grade:rate + N.Stage:rate + Grade:Survival.Months, filtered_data)
+summary(best_interaction)
+plot(best_interaction, 1)
+plot(best_interaction, 2)
+```
+
+```{r}
+anova(best_basic, best_interaction)
+```
+```{r}
+ks.test(residuals(best_basic), "pnorm",sd=sqrt(deviance(best_basic)/df.residual(best_basic)))
+ks.test(residuals(best_interaction), "pnorm",sd=sqrt(deviance(best_interaction)/df.residual(best_interaction)))
+```
+
+```{r}
+ncvTest(best_basic)
+ncvTest(best_interaction)
+```
+
