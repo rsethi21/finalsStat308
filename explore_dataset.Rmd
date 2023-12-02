@@ -22,7 +22,7 @@ library(leaps)
 ```{r}
 new_col = data$Reginol.Node.Positive/data$Regional.Node.Examined
 data$rate = new_col
-columns_to_remove = c("T.Stage", "X6th.Stage","differentiate", "Reginol.Node.Positive", "Regional.Node.Examined")
+columns_to_remove = c("T.Stage", "X6th.Stage","differentiate", "Regional.Node.Postive")
 filtered_data = select(data, -columns_to_remove)
 head(filtered_data)
 ```
@@ -35,7 +35,7 @@ for (y in ys){
   for (c in colors){
     if (y != c){
     ggplot(aes(x=!!sym(y), y=Tumor.Size, color=!!sym(c)), data=filtered_data) + geom_point() + geom_smooth(method="lm")
-    # ggsave(paste(paste(y, c), ".png"))
+    ggsave(paste(paste(y, c), ".png"))
     }
   }
 }
