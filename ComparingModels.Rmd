@@ -1,0 +1,202 @@
+---
+title: "Comparing Models"
+author: "Sean Kerr"
+date: "2023-12-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+dat <- read.csv('/Users/seankerr/Downloads/engineered_data.csv') %>% select(-X)
+
+# function to add squared terms, takes data as input and outputs same data with squared columns added
+add_squared_terms <- function(input_data, suffix = "_squared") {
+  numeric_cols <- sapply(input_data, is.numeric)
+
+  squared_terms <- lapply(input_data[, numeric_cols], function(x) x^2)
+  col_names <- paste0(names(squared_terms), suffix)
+  squared_df <- as.data.frame(setNames(squared_terms, col_names))
+
+  output_data <- cbind(input_data, squared_df)
+
+  return(output_data)
+}
+
+# create data with squared terms and remove tumor size squared
+dat_squared <- add_squared_terms(dat) %>% select(-Tumor.Size_squared)
+
+
+# takes list of models, runs them through selection and outputs AIC and KS Test p-vals
+pull_smod_criterion <- function(mods){
+  adjr2s <- c()
+  aics <- c()
+  ps <- c()
+  
+  for(x in mods){
+    sx <- step(x, direction='both')
+    
+    # adjr2 <- summary(sx)$adj.r.squared
+    # adjr2s <- c(adjr2s, adjr2)
+    
+    aic <- extractAIC(sx)[2]
+    aics <- c(aics, aic)
+    
+    p <- ks.test(residuals(sx), "pnorm",sd=sqrt(deviance(sx)/df.residual(sx)))$p.value
+    ps <- c(ps, p)
+  }
+  list(aics, ps)
+}
+
+
+
+
+pull_criterion <- function(mods){
+  adjr2s <- c()
+  aics <- c()
+  ps <- c()
+  
+  for(x in mods){
+    
+    aic <- extractAIC(x)[2]
+    aics <- c(aics, aic)
+    
+    p <- ks.test(residuals(x), "pnorm",sd=sqrt(deviance(x)/df.residual(x)))$p.value
+    ps <- c(ps, p)
+  }
+  
+  list( aics, ps)
+
+}
+
+
+
+# names of transformations so they can be organized in output
+names <- c('None', 'Sqrt', 'Log')
+
+############################################
+
+# create models with every transformation with basic terms
+no_trans_basic <- lm(Tumor.Size ~ ., dat)
+sqrt_basic <- lm(sqrt(Tumor.Size) ~., dat)
+log_basic <- lm(log(Tumor.Size) ~., dat)
+
+# create a list of the models and then pull the r2s using the function above
+basic_list <- list(no_trans_basic, sqrt_basic, log_basic)
+
+basic_crits <- pull_criterion(basic_list)
+basic_scrits <- pull_smod_criterion(basic_list)
+
+pre_r2s <- basic_crits[[1]]
+pre_aic <- basic_crits[[2]]
+pre_ps <- basic_crits[[3]] 
+
+post_r2s <- basic_scrits[[1]]
+basic_post_aic <- basic_crits[[1]]
+basic_post_ps <- basic_crits[[2]]
+
+# compile results into a dataframe with every Terms set as Basic
+basic_results <- data.frame(Transformation = names, 
+                            Terms = 'Basic', 
+                            AIC = basic_post_aic,
+                            p = basic_post_ps)
+
+
+############################################
+
+
+no_trans_squared <- lm(Tumor.Size ~ ., dat_squared)
+sqrt_squared <- lm(sqrt(Tumor.Size) ~., dat_squared)
+log_squared <- lm(log(Tumor.Size) ~., dat_squared)
+
+squared_list <- list(no_trans_squared, sqrt_squared, log_squared)
+
+squared_crits <- pull_criterion(squared_list)
+squared_scrits <- pull_smod_criterion(squared_list)
+
+pre_r2s <- squared_crits[[1]]
+pre_aic <- squared_crits[[2]]
+pre_ps <- squared_crits[[3]]
+
+post_r2s <- squared_scrits[[1]]
+squared_post_aic <- squared_crits[[1]]
+squared_post_ps <- squared_crits[[2]]
+
+# compile results into a dataframe with every Terms set as Basic
+squared_results <- data.frame(Transformation = names, 
+                            Terms = 'Basic + Squared', 
+                            AIC = squared_post_aic,
+                            p = squared_post_ps)
+
+
+############################################
+
+no_trans_inter <- lm(Tumor.Size ~ . + .*., dat)
+sqrt_inter <- lm(sqrt(Tumor.Size) ~. + .*., dat)
+log_inter <- lm(log(Tumor.Size) ~. + .*., dat)
+
+inter_list <- list(no_trans_inter, sqrt_inter, log_inter)
+
+inter_crits <- pull_criterion(inter_list)
+inter_scrits <- pull_smod_criterion(inter_list)
+
+pre_r2s <- inter_crits[[1]]
+pre_aic <- inter_crits[[2]]
+pre_ps <- inter_crits[[3]]
+
+post_r2s <- inter_scrits[[1]]
+inter_post_aic <- inter_crits[[1]]
+inter_post_ps <- inter_crits[[2]]
+
+# compile results into a dataframe with every Terms set as Basic
+inter_results <- data.frame(Transformation = names, 
+                            Terms = 'Basic + Inter',
+                            AIC = inter_post_aic,
+                            p = inter_post_ps)
+
+
+
+############################################
+
+# bis stands for basic, interactions, and squared
+no_trans_bis <- lm(Tumor.Size ~ . + .*., dat_squared)
+sqrt_bis <- lm(sqrt(Tumor.Size) ~. + .*., dat_squared)
+log_bis <- lm(log(Tumor.Size) ~. + .*., dat_squared)
+
+bis_list <- list(no_trans_bis, sqrt_bis, log_bis)
+
+bis_crits <- pull_criterion(bis_list)
+bis_scrits <- pull_smod_criterion(bis_list)
+
+pre_r2s <- bis_crits[[1]]
+pre_aic <- bis_crits[[2]]
+pre_ps <- bis_crits[[3]]
+
+post_r2s <- bis_scrits[[1]]
+bis_post_aic <- bis_crits[[1]]
+bis_post_ps <- bis_crits[[2]]
+
+# compile results into a dataframe with every Terms set as Basic
+bis_results <- data.frame(Transformation = names, 
+                          Terms = 'Basic + Inter + Squared',
+                          AIC = bis_post_aic,
+                          p = bis_post_ps)
+
+############################################
+
+
+# stack all of the result dataframes on top of eachother
+full_results <- rbind(basic_results, squared_results, inter_results, bis_results)
+
+
+library(tidytext)
+
+ggplot(full_results, aes(x=reorder_within(Transformation, -AIC, Terms), y=AIC)) + geom_bar(stat='identity') + facet_grid(~Terms, scales='free_x') + scale_x_reordered() + labs(x='Transformation', title = 'Comparing AIC Before Selection')
+
+ggplot(full_results, aes(x=Transformation, y=p)) + geom_bar(stat='identity') + facet_grid(~Terms, scales='free_x') +  labs(x='Transformation', title = 'Comparing KS Test p-values Before Selection', y='KS Test p-value')
+
+```
+```
